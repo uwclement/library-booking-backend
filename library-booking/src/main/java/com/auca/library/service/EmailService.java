@@ -1,16 +1,16 @@
-// Update EmailService.java
 package com.auca.library.service;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
@@ -126,4 +126,34 @@ public class EmailService {
         
         mailSender.send(message);
     }
+
+@Async
+public void sendNoShowNotification(String to, String seatNumber, LocalDateTime startTime) 
+        throws MessagingException {
+    MimeMessage message = mailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message, true);
+    
+    helper.setTo(to);
+    helper.setSubject("AUCA Library Booking Cancelled - No Show");
+    
+    String bookingUrl = "http://localhost:3000/seats";
+    
+    String content = "<html><body>"
+            + "<h2>AUCA Library Booking Cancellation Notice</h2>"
+            + "<p>Your booking has been automatically cancelled because you did not check in within 20 minutes of the start time:</p>"
+            + "<ul>"
+            + "<li><strong>Seat Number:</strong> " + seatNumber + "</li>"
+            + "<li><strong>Start Time:</strong> " + startTime.format(DATE_TIME_FORMATTER) + "</li>"
+            + "</ul>"
+            + "<p>The seat is now available for other users.</p>"
+            + "<p>If you still need a seat, you can make a new booking:</p>"
+            + "<a href='" + bookingUrl + "' style='background-color: #4CAF50; color: white; "
+            + "padding: 10px 15px; text-decoration: none;'>Book Again</a>"
+            + "</body></html>";
+    
+    helper.setText(content, true);
+    
+    mailSender.send(message);
+}
+    
 }
